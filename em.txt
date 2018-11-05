@@ -2,5 +2,6 @@
 "_main",
 "_ProgramMain",
 "_MainEventLoop",
-"_WaitForNextTick"
+"_WaitForNextTick",
+"_MySound_Stop"
 ]

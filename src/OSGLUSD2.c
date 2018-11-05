@@ -56,6 +56,10 @@ LOCALVAR char *app_parent = NULL;
 LOCALVAR char *pref_dir = NULL;
 #endif
 
+#if defined (EMSCRIPTEN) && defined (USE_EMULARITY_MVMACDIR)
+LOCALVAR char emularity_mvmacdir[] = "/emulator/minivmac";
+#endif
+
 #ifdef _WIN32
 #define MyPathSep '\\'
 #else
@@ -473,6 +477,7 @@ LOCALFUNC tMacErr LoadMacRomFromPrefDir(void)
 	char *t = NULL;
 	char *t2 = NULL;
 
+	fprintf (stderr, "pref_dir %s",pref_dir);
 	if (NULL == pref_dir) {
 		err = mnvm_fnfErr;
 	} else
@@ -522,12 +527,35 @@ LOCALFUNC tMacErr LoadMacRomFromAppPar(void)
 }
 #endif
 
+#if defined (EMSCRIPTEN) && defined (USE_EMULARITY_MVMACDIR)
+LOCALFUNC tMacErr LoadMacRomFromEmularityMvmacDir(void)
+{
+	tMacErr err;
+	char *t = NULL;
+	if (mnvm_noErr != (err =
+		ChildPath(emularity_mvmacdir, RomFileName, &t)))
+	{
+		/* fail */
+	} else
+	{
+		err = LoadMacRomFrom(t);
+	}
+	
+	MyMayFree(t);
+
+	return err;
+}
+#endif
+
 LOCALFUNC blnr LoadMacRom(void)
 {
 	tMacErr err;
 
 	if ((NULL == rom_path)
 		|| (mnvm_fnfErr == (err = LoadMacRomFrom(rom_path))))
+#if defined (EMSCRIPTEN) && defined (USE_EMULARITY_MVMACDIR)
+	if (mnvm_fnfErr == (err = LoadMacRomFromEmularityMvmacDir()))
+#endif
 #if CanGetAppPath
 	if (mnvm_fnfErr == (err = LoadMacRomFromAppPar()))
 	if (mnvm_fnfErr == (err = LoadMacRomFromPrefDir()))
@@ -3998,8 +4026,11 @@ GLOBALOSGLUFUNC blnr ExtraTimeNotOver(void)
 LOCALPROC WaitForTheNextEvent(void)
 {
 	SDL_Event event;
-
+#ifdef EMSCRIPTEN
+	if (SDL_PollEvent(&event)) {
+#else
 	if (SDL_WaitEvent(&event)) {
+#endif
 		HandleTheEvent(&event);
 	}
 }
@@ -4027,6 +4058,9 @@ label_retry:
 	if (CurSpeedStopped) {
 		DoneWithDrawingForTick();
 		WaitForTheNextEvent();
+#ifdef EMSCRIPTEN
+		emscripten_sleep_with_yield(0);
+#endif
 		goto label_retry;
 	}
 
@@ -4135,7 +4169,7 @@ LOCALFUNC blnr InitWhereAmI(void)
 	app_parent = SDL_GetBasePath();
 
 	pref_dir = SDL_GetPrefPath("gryphel", "minivmac");
-
+	
 	return trueblnr; /* keep going regardless */
 }
 #endif
