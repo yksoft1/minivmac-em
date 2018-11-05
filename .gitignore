@@ -14,5 +14,6 @@
 *.rom
 *.ROM
 *.img
+*.image
 *.dsk
 *.hfv

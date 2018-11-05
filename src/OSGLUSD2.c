@@ -26,7 +26,9 @@
 #include "ENDIANAC.h"
 
 #include "MYOSGLUE.h"
-
+#ifdef EMSCRIPTEN
+#include <emscripten.h>
+#endif
 #include "STRCONST.h"
 
 /* --- some simple utilities --- */
@@ -1085,7 +1087,9 @@ LOCALPROC MyDrawChangesAndClear(void)
 	if (ScreenChangedBottom > ScreenChangedTop) {
 		HaveChangedScreenBuff(ScreenChangedTop, ScreenChangedLeft,
 			ScreenChangedBottom, ScreenChangedRight);
+#ifndef EMSCRIPTEN
 		ScreenClearChanges();
+#endif
 	}
 }
 
@@ -1922,8 +1926,11 @@ label_retry:
 			dbglog_writeln("busy, so sleep");
 #endif
 
+#ifndef EMSCRIPTEN
 			(void) SDL_Delay(10);
-
+#else
+			(void) emscripten_sleep_with_yield(10);
+#endif
 			goto label_retry;
 		}
 
@@ -4024,7 +4031,11 @@ label_retry:
 	}
 
 	if (ExtraTimeNotOver()) {
+#ifndef EMSCRIPTEN
 		(void) SDL_Delay(NextIntTime - LastTime);
+#else
+		(void) emscripten_sleep_with_yield(NextIntTime - LastTime);
+#endif
 		goto label_retry;
 	}
 

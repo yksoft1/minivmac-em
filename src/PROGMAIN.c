@@ -22,6 +22,9 @@
 #include "SYSDEPNS.h"
 
 #include "MYOSGLUE.h"
+#ifdef EMSCRIPTEN
+#include <emscripten.h>
+#endif
 #include "EMCONFIG.h"
 #include "GLOBGLUE.h"
 #include "M68KITAB.h"
