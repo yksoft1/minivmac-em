@@ -545,6 +545,9 @@ LOCALPROC RunEmulatedTicksToTrueTime(void)
 LOCALPROC MainEventLoop(void)
 {
 	for (; ; ) {
+#ifdef EMSCRIPTEN
+		emscripten_sleep_with_yield(0);
+#endif
 		WaitForNextTick();
 		if (ForceMacOff) {
 			return;
