@@ -477,7 +477,6 @@ LOCALFUNC tMacErr LoadMacRomFromPrefDir(void)
 	char *t = NULL;
 	char *t2 = NULL;
 
-	fprintf (stderr, "pref_dir %s",pref_dir);
 	if (NULL == pref_dir) {
 		err = mnvm_fnfErr;
 	} else
