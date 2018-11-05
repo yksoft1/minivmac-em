@@ -6,16 +6,15 @@ ifeq ($(EMSCRIPTEN_ROOT),)
 	EMSCRIPTEN_ROOT=c:/emsdk/emscripten/1.38.12
 endif
 
-
 #WebAssembly seemed to be a bit faster than asm.js
 WASM=1
 
 #Set maximum RAM that Emscripten use (in bytes).
 EMSCRIPTEN_TOTAL_MEMORY=67108864
 
-TARGET = minivmacII.bc
+TARGET = minivmac.bc
 
-mk_COptionsCommon = -c -Wall -Wmissing-prototypes -Wno-uninitialized -Wundef -Wstrict-prototypes -IcfgII/ -Isrc/
+mk_COptionsCommon = -c -Wall -Wmissing-prototypes -Wno-uninitialized -Wundef -Wstrict-prototypes -Icfg/ -Isrc/
 mk_COptionsOSGLU = $(mk_COptionsCommon) -O3
 mk_COptions = $(mk_COptionsCommon) -O3
 
@@ -28,43 +27,39 @@ endif
 
 .PHONY: TheDefaultOutput clean
 
-TheDefaultOutput : $(TARGET)
+TheDefaultOutput : minivmac
 
-bld/OSGLUSD2.o : src/OSGLUSD2.c src/STRCNENG.h cfgII/STRCONST.h src/INTLCHAR.h src/COMOSGLU.h src/CONTROLM.h cfgII/CNFGGLOB.h
+bld/OSGLUSD2.o : src/OSGLUSD2.c src/STRCNENG.h cfg/STRCONST.h src/INTLCHAR.h src/COMOSGLU.h src/CONTROLM.h cfg/CNFGGLOB.h
 	$(CC) "src/OSGLUSD2.c" -o "bld/OSGLUSD2.o" $(mk_COptions)
-bld/GLOBGLUE.o : src/GLOBGLUE.c cfgII/CNFGGLOB.h
+bld/GLOBGLUE.o : src/GLOBGLUE.c cfg/CNFGGLOB.h
 	$(CC) "src/GLOBGLUE.c" -o "bld/GLOBGLUE.o" $(mk_COptions)
-bld/M68KITAB.o : src/M68KITAB.c cfgII/CNFGGLOB.h
+bld/M68KITAB.o : src/M68KITAB.c cfg/CNFGGLOB.h
 	$(CC) "src/M68KITAB.c" -o "bld/M68KITAB.o" $(mk_COptions)
-bld/MINEM68K.o : src/MINEM68K.c src/FPMATHEM.h src/FPCPEMDV.h cfgII/CNFGGLOB.h
+bld/MINEM68K.o : src/MINEM68K.c cfg/CNFGGLOB.h
 	$(CC) "src/MINEM68K.c" -o "bld/MINEM68K.o" $(mk_COptions)
-bld/VIAEMDEV.o : src/VIAEMDEV.c cfgII/CNFGGLOB.h
+bld/VIAEMDEV.o : src/VIAEMDEV.c cfg/CNFGGLOB.h
 	$(CC) "src/VIAEMDEV.c" -o "bld/VIAEMDEV.o" $(mk_COptions)
-bld/VIA2EMDV.o : src/VIA2EMDV.c cfgII/CNFGGLOB.h
-	$(CC) "src/VIA2EMDV.c" -o "bld/VIA2EMDV.o" $(mk_COptions)
-bld/IWMEMDEV.o : src/IWMEMDEV.c cfgII/CNFGGLOB.h
+bld/IWMEMDEV.o : src/IWMEMDEV.c cfg/CNFGGLOB.h
 	$(CC) "src/IWMEMDEV.c" -o "bld/IWMEMDEV.o" $(mk_COptions)
-bld/SCCEMDEV.o : src/SCCEMDEV.c cfgII/CNFGGLOB.h
+bld/SCCEMDEV.o : src/SCCEMDEV.c cfg/CNFGGLOB.h
 	$(CC) "src/SCCEMDEV.c" -o "bld/SCCEMDEV.o" $(mk_COptions)
-bld/RTCEMDEV.o : src/RTCEMDEV.c cfgII/CNFGGLOB.h
+bld/RTCEMDEV.o : src/RTCEMDEV.c cfg/CNFGGLOB.h
 	$(CC) "src/RTCEMDEV.c" -o "bld/RTCEMDEV.o" $(mk_COptions)
-bld/ROMEMDEV.o : src/ROMEMDEV.c cfgII/CNFGGLOB.h
+bld/ROMEMDEV.o : src/ROMEMDEV.c cfg/CNFGGLOB.h
 	$(CC) "src/ROMEMDEV.c" -o "bld/ROMEMDEV.o" $(mk_COptions)
-bld/SCSIEMDV.o : src/SCSIEMDV.c cfgII/CNFGGLOB.h
+bld/SCSIEMDV.o : src/SCSIEMDV.c cfg/CNFGGLOB.h
 	$(CC) "src/SCSIEMDV.c" -o "bld/SCSIEMDV.o" $(mk_COptions)
-bld/SONYEMDV.o : src/SONYEMDV.c cfgII/CNFGGLOB.h
+bld/SONYEMDV.o : src/SONYEMDV.c cfg/CNFGGLOB.h
 	$(CC) "src/SONYEMDV.c" -o "bld/SONYEMDV.o" $(mk_COptions)
-bld/SCRNEMDV.o : src/SCRNEMDV.c cfgII/CNFGGLOB.h
+bld/SCRNEMDV.o : src/SCRNEMDV.c cfg/CNFGGLOB.h
 	$(CC) "src/SCRNEMDV.c" -o "bld/SCRNEMDV.o" $(mk_COptions)
-bld/VIDEMDEV.o : src/VIDEMDEV.c cfgII/CNFGGLOB.h
-	$(CC) "src/VIDEMDEV.c" -o "bld/VIDEMDEV.o" $(mk_COptions)
-bld/MOUSEMDV.o : src/MOUSEMDV.c cfgII/CNFGGLOB.h
+bld/MOUSEMDV.o : src/MOUSEMDV.c cfg/CNFGGLOB.h
 	$(CC) "src/MOUSEMDV.c" -o "bld/MOUSEMDV.o" $(mk_COptions)
-bld/ADBEMDEV.o : src/ADBEMDEV.c cfgII/CNFGGLOB.h
-	$(CC) "src/ADBEMDEV.c" -o "bld/ADBEMDEV.o" $(mk_COptions)
-bld/ASCEMDEV.o : src/ASCEMDEV.c cfgII/CNFGGLOB.h
-	$(CC) "src/ASCEMDEV.c" -o "bld/ASCEMDEV.o" $(mk_COptions)
-bld/PROGMAIN.o : src/PROGMAIN.c cfgII/CNFGGLOB.h
+bld/KBRDEMDV.o : src/KBRDEMDV.c cfg/CNFGGLOB.h
+	$(CC) "src/KBRDEMDV.c" -o "bld/KBRDEMDV.o" $(mk_COptions)
+bld/SNDEMDEV.o : src/SNDEMDEV.c cfg/CNFGGLOB.h
+	$(CC) "src/SNDEMDEV.c" -o "bld/SNDEMDEV.o" $(mk_COptions)
+bld/PROGMAIN.o : src/PROGMAIN.c cfg/CNFGGLOB.h
 	$(CC) "src/PROGMAIN.c" -o "bld/PROGMAIN.o" $(mk_COptions)
 
 ObjFiles = \
@@ -73,7 +68,6 @@ ObjFiles = \
 	bld/GLOBGLUE.o \
 	bld/M68KITAB.o \
 	bld/VIAEMDEV.o \
-	bld/VIA2EMDV.o \
 	bld/IWMEMDEV.o \
 	bld/SCCEMDEV.o \
 	bld/RTCEMDEV.o \
@@ -81,10 +75,9 @@ ObjFiles = \
 	bld/SCSIEMDV.o \
 	bld/SONYEMDV.o \
 	bld/SCRNEMDV.o \
-	bld/VIDEMDEV.o \
 	bld/MOUSEMDV.o \
-	bld/ADBEMDEV.o \
-	bld/ASCEMDEV.o \
+	bld/KBRDEMDV.o \
+	bld/SNDEMDEV.o \
 	bld/PROGMAIN.o \
 
 
@@ -96,7 +89,7 @@ $(TARGET) : $(ObjFiles)
 clean :
 	rm -f $(ObjFiles)
 	rm -f "$(TARGET)"
-	
+
 html: $(TARGET)
 ifeq ($(PRELOAD), 1)
 	$(CC) -O3 -s USE_SDL=2 -s WASM=$(WASM) -s TOTAL_MEMORY=$(EMSCRIPTEN_TOTAL_MEMORY)  -s EMTERPRETIFY=1 -s EMTERPRETIFY_ASYNC=1 \
