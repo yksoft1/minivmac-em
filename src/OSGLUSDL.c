@@ -26,7 +26,9 @@
 #include "ENDIANAC.h"
 
 #include "MYOSGLUE.h"
-
+#ifdef EMSCRIPTEN
+#include <emscripten.h>
+#endif
 #include "STRCONST.h"
 
 /* --- some simple utilities --- */
@@ -41,6 +43,52 @@ GLOBALOSGLUPROC MyMoveBytes(anyp srcPtr, anyp destPtr, si5b byteCount)
 #define NeedCell2PlainAsciiMap 1
 
 #include "INTLCHAR.h"
+
+#if defined (EMSCRIPTEN) && defined (USE_EMULARITY_MVMACDIR)
+LOCALVAR char emularity_mvmacdir[] = "/emulator/minivmac";
+#endif
+
+#ifdef _WIN32
+#define MyPathSep '\\'
+#else
+#define MyPathSep '/'
+#endif
+
+LOCALFUNC tMacErr ChildPath(char *x, char *y, char **r)
+{
+	tMacErr err = mnvm_miscErr;
+	int nx = strlen(x);
+	int ny = strlen(y);
+	{
+		if ((nx > 0) && (MyPathSep == x[nx - 1])) {
+			--nx;
+		}
+		{
+			int nr = nx + 1 + ny;
+			char *p = malloc(nr + 1);
+			if (p != NULL) {
+				char *p2 = p;
+				(void) memcpy(p2, x, nx);
+				p2 += nx;
+				*p2++ = MyPathSep;
+				(void) memcpy(p2, y, ny);
+				p2 += ny;
+				*p2 = 0;
+				*r = p;
+				err = mnvm_noErr;
+			}
+		}
+	}
+
+	return err;
+}
+
+LOCALPROC MyMayFree(char *p)
+{
+	if (NULL != p) {
+		free(p);
+	}
+}
 
 /* --- sending debugging info to file --- */
 
@@ -331,6 +379,26 @@ LOCALFUNC blnr LoadInitialImages(void)
 
 /* --- ROM --- */
 
+#if defined (EMSCRIPTEN) && defined (USE_EMULARITY_MVMACDIR)
+LOCALFUNC tMacErr LoadMacRomFromEmularityMvmacDir(void)
+{
+	tMacErr err;
+	char *t = NULL;
+	if (mnvm_noErr != (err =
+		ChildPath(emularity_mvmacdir, RomFileName, &t)))
+	{
+		/* fail */
+	} else
+	{
+		err = LoadMacRomFrom(t);
+	}
+	
+	MyMayFree(t);
+
+	return err;
+}
+#endif
+
 LOCALVAR char *rom_path = NULL;
 
 LOCALFUNC blnr LoadMacRom(void)
@@ -339,6 +407,9 @@ LOCALFUNC blnr LoadMacRom(void)
 
 	if ((NULL == rom_path)
 		|| (mnvm_fnfErr == (err = LoadMacRomFrom(rom_path))))
+#if defined (EMSCRIPTEN) && defined (USE_EMULARITY_MVMACDIR)
+	if (mnvm_fnfErr == (err = LoadMacRomFromEmularityMvmacDir()))
+#endif		
 	if (mnvm_fnfErr == (err = LoadMacRomFrom(RomFileName)))
 	{
 	}
@@ -1041,8 +1112,10 @@ LOCALFUNC ui3r SDLKey2MacKeyCode(SDLKey i)
 		case SDLK_LCTRL: v = MKC_formac_Control; break;
 		case SDLK_RALT: v = MKC_formac_RCommand; break;
 		case SDLK_LALT: v = MKC_formac_Command; break;
+#ifndef EMSCRIPTEN
 		case SDLK_RMETA: v = MKC_formac_RCommand; break;
 		case SDLK_LMETA: v = MKC_formac_Command; break;
+#endif
 		case SDLK_LSUPER: v = MKC_formac_Option; break;
 		case SDLK_RSUPER: v = MKC_formac_ROption; break;
 
@@ -1056,7 +1129,9 @@ LOCALFUNC ui3r SDLKey2MacKeyCode(SDLKey i)
 		case SDLK_BREAK: /* ? */ break;
 		case SDLK_MENU: /* ? */ break;
 		case SDLK_POWER: /* ? */ break;
+#ifndef EMSCRIPTEN
 		case SDLK_EURO: /* ? */ break;
+#endif
 		case SDLK_UNDO: /* ? */ break;
 
 		default:
@@ -1569,7 +1644,11 @@ label_retry:
 			dbglog_writeln("busy, so sleep");
 #endif
 
+#ifndef EMSCRIPTEN
 			(void) SDL_Delay(10);
+#else
+			(void) emscripten_sleep_with_yield(10);
+#endif
 
 			goto label_retry;
 		}
@@ -2126,8 +2205,11 @@ GLOBALOSGLUFUNC blnr ExtraTimeNotOver(void)
 LOCALPROC WaitForTheNextEvent(void)
 {
 	SDL_Event event;
-
+#ifdef EMSCRIPTEN
+	if (SDL_PollEvent(&event)) {
+#else
 	if (SDL_WaitEvent(&event)) {
+#endif
 		HandleTheEvent(&event);
 	}
 }
@@ -2155,11 +2237,18 @@ label_retry:
 	if (CurSpeedStopped) {
 		DoneWithDrawingForTick();
 		WaitForTheNextEvent();
+#ifdef EMSCRIPTEN
+		emscripten_sleep_with_yield(0);
+#endif		
 		goto label_retry;
 	}
 
 	if (ExtraTimeNotOver()) {
+#ifndef EMSCRIPTEN
 		(void) SDL_Delay(NextIntTime - LastTime);
+#else
+		(void) emscripten_sleep_with_yield(NextIntTime - LastTime);
+#endif
 		goto label_retry;
 	}
 

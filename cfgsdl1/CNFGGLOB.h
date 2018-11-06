@@ -90,7 +90,7 @@ typedef si5b si5r;
 #define EnableMouseMotion 1
 
 #define IncludeHostTextClipExchange 0
-#define EnableAutoSlow 0
+#define EnableAutoSlow 1
 #define EmLocalTalk 0
 #define AutoLocation 1
 #define AutoTimeZone 1
