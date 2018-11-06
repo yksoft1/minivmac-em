@@ -1414,10 +1414,11 @@ LOCALFUNC ui3r SDLScan2MacKeyCode(SDL_Scancode i)
 		case SDL_SCANCODE_LSHIFT: v = MKC_formac_Shift; break;
 		case SDL_SCANCODE_RCTRL: v = MKC_formac_RControl; break;
 		case SDL_SCANCODE_LCTRL: v = MKC_formac_Control; break;
-		case SDL_SCANCODE_RALT: v = MKC_formac_ROption; break;
-		case SDL_SCANCODE_LALT: v = MKC_formac_Option; break;
-		case SDL_SCANCODE_RGUI: v = MKC_formac_RCommand; break;
-		case SDL_SCANCODE_LGUI: v = MKC_formac_Command; break;
+		case SDL_SCANCODE_RALT: v = MKC_formac_RCommand; break;
+		case SDL_SCANCODE_LALT: v = MKC_formac_Command; break;
+		case SDL_SCANCODE_RGUI: v = MKC_formac_ROption; break;
+		case SDL_SCANCODE_LGUI: v = MKC_formac_Option; break;
+		/* GUI key may not work on Windows.. */ 
 		/* case SDLK_LSUPER: v = MKC_formac_Option; break; */
 		/* case SDLK_RSUPER: v = MKC_formac_ROption; break; */
 
